@@ -36,6 +36,67 @@ export const useChatStore = create((set, get) => ({
   //   }
   // },
 
+  //v2 of send message
+  // getMessages: async (userId) => {
+  //   set({ isMessagesLoading: true });
+  //   try {
+  //     const res = await axiosInstance.get(`/messages/${userId}`);
+  //     const messages = res.data;
+  
+  //     // Get current user's private key from localStorage
+  //     const privateKeysJson = localStorage.getItem("privateKeys");
+  //     if (!privateKeysJson) {
+  //       toast.error("No private keys found in local storage.");
+  //       set({ messages });
+  //       return;
+  //     }
+  
+  //     const privateKeys = JSON.parse(privateKeysJson);
+  //     const currentUserId = useAuthStore.getState().authUser._id;
+  //     const privateKeyString = privateKeys[currentUserId];
+  //     if (!privateKeyString) {
+  //       toast.error("Private key not found for current user.");
+  //       set({ messages });
+  //       return;
+  //     }
+  
+  //     const privateKey = SimpleRSA.parseBigInt(privateKeyString);
+  
+  //     // Decrypt each message
+  //     const decryptedMessages = await Promise.all(
+  //       messages.map(async (msg) => {
+         
+  //         if (msg.text && msg.text.cipherText && msg.text.encryptedAESKey) {
+  //           try {
+  //             // 1️⃣ Decrypt AES key using user's private RSA key
+
+  //             console.log(msg.text.encryptedAESKey);
+  //             console.log(privateKey);
+  //             const aesKey = SimpleRSA.decrypt(msg.text.encryptedAESKey, privateKey);
+  
+         
+  //             // 2️⃣ Decrypt message using AES key
+              
+  //             const plainText = await AESUtil.decrypt(msg.text.cipherText, aesKey);
+              
+  //             return { ...msg, text: plainText };
+  //           } catch (error) {
+  //             console.error("Decryption failed for message", msg._id, error);
+  //             return { ...msg, text: "Decryption failed" };
+  //           }
+  //         }
+  //         return msg; // return message as is if no text
+  //       })
+  //     );
+  
+  //     set({ messages: decryptedMessages });
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message || "Failed to fetch messages");
+  //   } finally {
+  //     set({ isMessagesLoading: false });
+  //   }
+  // },
+
   getMessages: async (userId) => {
     set({ isMessagesLoading: true });
     try {
@@ -43,16 +104,10 @@ export const useChatStore = create((set, get) => ({
       const messages = res.data;
   
       // Get current user's private key from localStorage
-      const privateKeysJson = localStorage.getItem("privateKeys");
-      if (!privateKeysJson) {
-        toast.error("No private keys found in local storage.");
-        set({ messages });
-        return;
-      }
-  
-      const privateKeys = JSON.parse(privateKeysJson);
+      const privateKeys = JSON.parse(localStorage.getItem("privateKeys") || "{}");
       const currentUserId = useAuthStore.getState().authUser._id;
       const privateKeyString = privateKeys[currentUserId];
+  
       if (!privateKeyString) {
         toast.error("Private key not found for current user.");
         set({ messages });
@@ -64,27 +119,25 @@ export const useChatStore = create((set, get) => ({
       // Decrypt each message
       const decryptedMessages = await Promise.all(
         messages.map(async (msg) => {
-         
-          if (msg.text && msg.text.cipherText && msg.text.encryptedAESKey) {
+          if (msg.text?.cipherText && msg.text?.encryptedAESKeys) {
             try {
-              // 1️⃣ Decrypt AES key using user's private RSA key
-
-              console.log(msg.text.encryptedAESKey);
-              console.log(privateKey);
-              const aesKey = SimpleRSA.decrypt(msg.text.encryptedAESKey, privateKey);
+              // 1️⃣ Pick correct encrypted AES key
+              const keyFor = msg.senderId === currentUserId ? 'sender' : 'receiver';
+              const encryptedAESKey = msg.text.encryptedAESKeys[keyFor];
   
-         
-              // 2️⃣ Decrypt message using AES key
-              
+              // 2️⃣ Decrypt AES key using user's private RSA key
+              const aesKey = SimpleRSA.decrypt(encryptedAESKey, privateKey);
+  
+              // 3️⃣ Decrypt message using AES key
               const plainText = await AESUtil.decrypt(msg.text.cipherText, aesKey);
-              
+  
               return { ...msg, text: plainText };
             } catch (error) {
               console.error("Decryption failed for message", msg._id, error);
               return { ...msg, text: "Decryption failed" };
             }
           }
-          return msg; // return message as is if no text
+          return msg;
         })
       );
   
@@ -95,6 +148,7 @@ export const useChatStore = create((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
+  
   
   sendMessage: async (messageData) => {
     //messageData {
@@ -114,7 +168,6 @@ export const useChatStore = create((set, get) => ({
     //use aes and rsa here
     try {
       let cipherText = null;
-    let encryptedAESKey = null;
 
     if (text) {
       // 1️ Generate a random AES key
@@ -145,7 +198,34 @@ export const useChatStore = create((set, get) => ({
           };
     }
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, newMessageData);
-      set({ messages: [...messages, res.data] });
+      //if i setup directly this will try to read encrypted messages so we need to decrypt it
+
+      // set({ messages: [...messages, res.data] });
+
+
+      ///change
+
+     
+// Decrypt the sent message immediately
+let decryptedText = "";
+if (res.data.text?.cipherText && res.data.text?.encryptedAESKeys) {
+  try {
+    const privateKeys = JSON.parse(localStorage.getItem("privateKeys") || "{}");
+    const currentUserId = useAuthStore.getState().authUser._id;
+    const privateKeyString = privateKeys[currentUserId];
+    const privateKey = SimpleRSA.parseBigInt(privateKeyString);
+
+    // decrypt using the sender's private key (you)
+    const aesKey = SimpleRSA.decrypt(res.data.text.encryptedAESKeys.sender, privateKey);
+    decryptedText = await AESUtil.decrypt(res.data.text.cipherText, aesKey);
+  } catch (err) {
+    console.error("Decryption failed for sent message", err);
+    decryptedText = "Decryption failed";
+  }
+}
+
+set({ messages: [...messages, { ...res.data, text: decryptedText }] });
+
     } catch (error) {
       toast.error(error.response.data.message);
     }
