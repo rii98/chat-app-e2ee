@@ -231,22 +231,67 @@ set({ messages: [...messages, { ...res.data, text: decryptedText }] });
       toast.error(error.response.data.message);
     }
   },
+//crashes when receiver receives new messages
+  // subscribeToMessages: () => {
+  //   const { selectedUser } = get();
+  //   if (!selectedUser) return;
+
+  //   const socket = useAuthStore.getState().socket;
+
+  //   socket.on("newMessage", (newMessage) => {
+  //     const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+  //     if (!isMessageSentFromSelectedUser) return;
+
+  //     set({
+  //       messages: [...get().messages, newMessage],
+  //     });
+  //   });
+  // },
+
+  //fixed version
 
   subscribeToMessages: () => {
-    const { selectedUser } = get();
+    const { selectedUser, messages } = get();
     if (!selectedUser) return;
-
+  
     const socket = useAuthStore.getState().socket;
-
-    socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
-
+  
+    socket.on("newMessage", async (newMessage) => {
+      const isMessageForSelectedUser =
+        newMessage.senderId === selectedUser._id ||
+        newMessage.receiverId === selectedUser._id;
+  
+      if (!isMessageForSelectedUser) return;
+  
+      let decryptedText = newMessage.text;
+  
+      // If the message has text, decrypt it
+      if (newMessage.text?.cipherText && newMessage.text?.encryptedAESKeys) {
+        try {
+          const privateKeys = JSON.parse(localStorage.getItem("privateKeys") || "{}");
+          const currentUserId = useAuthStore.getState().authUser._id;
+          const privateKeyString = privateKeys[currentUserId];
+          const privateKey = SimpleRSA.parseBigInt(privateKeyString);
+  
+          // Decide which AES key to use: sender or receiver
+          const aesKey =
+            newMessage.senderId === currentUserId
+              ? SimpleRSA.decrypt(newMessage.text.encryptedAESKeys.sender, privateKey)
+              : SimpleRSA.decrypt(newMessage.text.encryptedAESKeys.receiver, privateKey);
+  
+          decryptedText = await AESUtil.decrypt(newMessage.text.cipherText, aesKey);
+        } catch (err) {
+          console.error("Decryption failed for incoming message", err);
+          decryptedText = "Decryption failed";
+        }
+      }
+  
       set({
-        messages: [...get().messages, newMessage],
+        messages: [...get().messages, { ...newMessage, text: decryptedText }],
       });
     });
   },
+  
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
