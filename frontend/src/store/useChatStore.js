@@ -97,24 +97,20 @@ export const useChatStore = create((set, get) => ({
   },
   
   sendMessage: async (messageData) => {
-
     //messageData {
       //   text: text.trim(),
       //   image: imagePreview,
       // }
     const { selectedUser, messages } = get();
-
+    const { authUser } = useAuthStore.getState();
     //get the public key of selected user
     const selectedUserPublicKey = selectedUser?.publicKey;
-
     if(!selectedUserPublicKey){
       toast.error("No public key for selected user.");
       return;
     }
     const {text,image} = messageData;
     let newMessageData = {};
-    
-
     //use aes and rsa here
     try {
       let cipherText = null;
@@ -128,14 +124,25 @@ export const useChatStore = create((set, get) => ({
       cipherText = await AESUtil.encrypt(text, aesKey);
 
       // 3️ Encrypt the AES key with receiver's RSA public key
-      const receiverPublicKey = SimpleRSA.parseBigInt(selectedUser.publicKey);
-      encryptedAESKey = SimpleRSA.encrypt(aesKey, receiverPublicKey);
-
-      //encrypted packet 
-      newMessageData = {
-        text: { cipherText, encryptedAESKey },
-        image: image || null,
-      };
+          // 3️⃣ Encrypt AES key for receiver
+          const receiverPublicKey = SimpleRSA.parseBigInt(selectedUser.publicKey);
+          const encryptedAESKeyForReceiver = SimpleRSA.encrypt(aesKey, receiverPublicKey);
+    
+          // 4️⃣ Encrypt AES key for sender
+          const senderPublicKey = SimpleRSA.parseBigInt(authUser.publicKey);
+          const encryptedAESKeyForSender = SimpleRSA.encrypt(aesKey, senderPublicKey);
+    
+          // 5️⃣ Construct the message payload
+          newMessageData = {
+            text: {
+              cipherText,
+              encryptedAESKeys: {
+                sender: encryptedAESKeyForSender,
+                receiver: encryptedAESKeyForReceiver,
+              },
+            },
+            image: image || null,
+          };
     }
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, newMessageData);
       set({ messages: [...messages, res.data] });

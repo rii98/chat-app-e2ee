@@ -14,7 +14,10 @@ const messageSchema = new mongoose.Schema(
     },
     text: {
       cipherText: { type: String},
-      encryptedAESKey: { type: String},
+      encryptedAESKeys: {
+        sender: { type: String, required: true },   // AES key encrypted with sender's public key
+        receiver: { type: String, required: true }  // AES key encrypted with receiver's public key
+      }
     },
     image: {
       type: String,

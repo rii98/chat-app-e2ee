@@ -52,6 +52,16 @@ export const useAuthStore = create((set, get) => ({
       storedKeys[user._id] = stringifiedPrivateKey; // use user._id as key
       localStorage.setItem("privateKeys", JSON.stringify(storedKeys));
 
+      // const storedPrivateKeys = JSON.parse(localStorage.getItem("privateKeys") || "{}");
+      // storedPrivateKeys[user._id] = stringifiedPrivateKey;
+      // localStorage.setItem("privateKeys", JSON.stringify(storedPrivateKeys));
+  
+  
+      // // 5. Store public key separately in localStorage
+      // const storedPublicKeys = JSON.parse(localStorage.getItem("publicKeys") || "{}");
+      // storedPublicKeys[user._id] = stringifiedPublicKey;
+      // localStorage.setItem("publicKeys", JSON.stringify(storedPublicKeys));
+
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
