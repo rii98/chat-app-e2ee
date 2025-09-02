@@ -24,7 +24,9 @@ app.use(
     credentials: true,
   })
 );
-
+app.get("/",(req,res)=>{
+  res.send("Server is running fine....");
+})
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
