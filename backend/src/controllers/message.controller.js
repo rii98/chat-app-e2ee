@@ -40,6 +40,7 @@ export const sendMessage = async (req, res) => {
     const { text, image } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
+    // const senderId = "68b6ad37294192ce2b7f4d63";
 
     let imageUrl;
     if (image) {
