@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import SimpleRSA from "../lib/rsa.js";
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
@@ -31,7 +32,13 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
-      const res = await axiosInstance.post("/auth/signup", data);
+      const {publicKey, privateKey} = SimpleRSA.generateKeys();
+      const stringifiedPublicKey = SimpleRSA.stringifyBigInt(publicKey);
+      const stringifiedPrivateKey = SimpleRSA.stringifyBigInt(privateKey);
+
+      
+      const res = await axiosInstance.post("/auth/signup",
+      {...data,publicKey:stringifiedPublicKey});
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
