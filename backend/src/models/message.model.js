@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { stringify } from "uuid";
 
 const messageSchema = new mongoose.Schema(
   {
@@ -15,8 +16,8 @@ const messageSchema = new mongoose.Schema(
     text: {
       cipherText: { type: String},
       encryptedAESKeys: {
-        sender: { type: String, required: true },   // AES key encrypted with sender's public key
-        receiver: { type: String, required: true }  // AES key encrypted with receiver's public key
+        sender: { type: String },   // AES key encrypted with sender's public key
+        receiver: { type: String }  // AES key encrypted with receiver's public key
       }
     },
     image: {

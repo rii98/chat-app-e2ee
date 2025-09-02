@@ -157,6 +157,8 @@ export const useChatStore = create((set, get) => ({
       // }
     const { selectedUser, messages } = get();
     const { authUser } = useAuthStore.getState();
+
+
     //get the public key of selected user
     const selectedUserPublicKey = selectedUser?.publicKey;
     if(!selectedUserPublicKey){
@@ -168,7 +170,7 @@ export const useChatStore = create((set, get) => ({
     //use aes and rsa here
     try {
       let cipherText = null;
-
+      let encryptedAESKeys = null;
     if (text) {
       // 1️ Generate a random AES key
       const aesKey = await AESUtil.generateKey();
@@ -186,17 +188,16 @@ export const useChatStore = create((set, get) => ({
           const encryptedAESKeyForSender = SimpleRSA.encrypt(aesKey, senderPublicKey);
     
           // 5️⃣ Construct the message payload
-          newMessageData = {
-            text: {
-              cipherText,
-              encryptedAESKeys: {
-                sender: encryptedAESKeyForSender,
-                receiver: encryptedAESKeyForReceiver,
-              },
-            },
-            image: image || null,
+          encryptedAESKeys = {
+            sender: encryptedAESKeyForSender,
+            receiver: encryptedAESKeyForReceiver,
           };
+
     }
+    newMessageData = {
+      text: cipherText ? { cipherText, encryptedAESKeys } : null,
+      image: image || null,
+    };
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, newMessageData);
       //if i setup directly this will try to read encrypted messages so we need to decrypt it
 
