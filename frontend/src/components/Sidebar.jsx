@@ -12,6 +12,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     getUsers();
+    console.log("xyz",onlineUsers)
   }, [getUsers]);
 
   const filteredUsers = showOnlineOnly
@@ -85,3 +86,4 @@ const Sidebar = () => {
   );
 };
 export default Sidebar;
+

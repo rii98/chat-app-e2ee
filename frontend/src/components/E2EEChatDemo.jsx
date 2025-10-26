@@ -65,7 +65,7 @@ const E2EEChatDemo = () => {
 
   const initialize = async () => {
     addLog('info', 'Initializing E2EE Chat Demo...');
-    await generateRSAKeys();
+    // await generateRSAKeys();
     addLog('success', 'Ready to demonstrate secure messaging!');
   };
 
