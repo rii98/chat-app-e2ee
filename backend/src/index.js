@@ -21,7 +21,8 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://chat-app-e2ee-frontend.vercel.app" 
+  "https://chat-app-e2ee-frontend.vercel.app" ,
+  "https://chat-app-e2ee-frontend-git-main-rii98s-projects.vercel.app/login"
 ];
 
 app.use(
