@@ -22,7 +22,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://chat-app-e2ee-frontend.vercel.app" ,
-  "https://chat-app-e2ee-frontend-git-main-rii98s-projects.vercel.app/login"
+  "https://chat-app-e2ee-frontend-git-main-rii98s-projects.vercel.app"
 ];
 
 app.use(
