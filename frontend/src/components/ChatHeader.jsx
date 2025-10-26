@@ -6,6 +6,8 @@ const ChatHeader = () => {
   const { selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
+  const isOnline = onlineUsers.includes(selectedUser._id);
+
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
@@ -13,15 +15,20 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName} />
+              <img
+                src={selectedUser.profilePic || "/avatar.png"}
+                alt={selectedUser.fullName}
+              />
             </div>
           </div>
 
           {/* User info */}
           <div>
-            <h3 className="font-medium">{selectedUser.fullName}</h3>
+            <h3 className="font-medium leading-tight">
+              {selectedUser.fullName}
+            </h3>
             <p className="text-sm text-base-content/70">
-              {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+              {isOnline ? "Online" : "Offline"}
             </p>
           </div>
         </div>
@@ -31,7 +38,13 @@ const ChatHeader = () => {
           <X />
         </button>
       </div>
+
+      {/* Subtle encryption info */}
+      <p className="text-[12px] text-center text-base-content/60 mt-1">
+        🔒 Your messages are end-to-end encrypted
+      </p>
     </div>
   );
 };
+
 export default ChatHeader;

@@ -111,8 +111,6 @@ const LoginPage = () => {
 
       
       <RightPromoContent
-        title={"Welcome back!"}
-        subtitle={"Sign in to continue your conversations and catch up with your messages."}
       />
     </div>
   );

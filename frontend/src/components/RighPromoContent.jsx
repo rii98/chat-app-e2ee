@@ -179,6 +179,7 @@ const RightPromoContent = () => (
       }
     `}</style>
   </div>
+
 );
 
 export default RightPromoContent;
