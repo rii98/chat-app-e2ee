@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import SimpleRSA from "../lib/rsa.js";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "https://chat-app-e2ee.onrender.com/api";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
