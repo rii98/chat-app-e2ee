@@ -292,7 +292,7 @@ const E2EEChatDemo = () => {
                     Generate your unique RSA key pair for secure communication
                   </p>
                   
-                  <div className="flex items-center mb-4">
+                  {/* <div className="flex items-center mb-4">
                     <label className="text-gray-400 min-w-32">Key Strength:</label>
                     <select 
                       value={keySize}
@@ -303,7 +303,20 @@ const E2EEChatDemo = () => {
                       <option value="1024">1024 bits (Recommended)</option>
                       <option value="2048">2048 bits (Maximum Security)</option>
                     </select>
-                  </div>
+                  </div> */}
+
+<div className="space-y-2 mb-4">
+  <label className="text-gray-400 block">Key Strength:</label>
+  <select 
+    value={keySize}
+    onChange={(e) => setKeySize(Number(e.target.value))}
+    className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+  >
+    <option value="512">512 bits (Fast)</option>
+    <option value="1024">1024 bits (Recommended)</option>
+    <option value="2048">2048 bits (Maximum Security)</option>
+  </select>
+</div>
                   
                   <button 
                     onClick={createUserAccount}
@@ -383,15 +396,21 @@ const E2EEChatDemo = () => {
                     Encrypted Package:
                   </div>
                   <div className="space-y-2 text-xs font-mono">
-                    <div className="bg-gray-800 rounded-lg p-2">
-                      <div className="text-orange-300">AES Key (RSA Encrypted):</div>
-                      <div className="text-gray-400">{encryptedAesKey.substring(0, 50)}...</div>
-                    </div>
-                    <div className="bg-gray-800 rounded-lg p-2">
-                      <div className="text-orange-300">Message (AES Encrypted):</div>
-                      <div className="text-gray-400">{encryptedMessage.substring(0, 50)}...</div>
-                    </div>
-                  </div>
+  <div className="bg-gray-800 rounded-lg p-2">
+    <div className="text-orange-300">AES Key (RSA Encrypted):</div>
+    <div className="text-gray-400 break-all">
+      <span className="hidden sm:inline">{encryptedAesKey.substring(0, 50)}...</span>
+      <span className="sm:hidden">{encryptedAesKey.substring(0, 25)}...</span>
+    </div>
+  </div>
+  <div className="bg-gray-800 rounded-lg p-2">
+    <div className="text-orange-300">Message (AES Encrypted):</div>
+    <div className="text-gray-400 break-all">
+      <span className="hidden sm:inline">{encryptedMessage.substring(0, 50)}...</span>
+      <span className="sm:hidden">{encryptedMessage.substring(0, 25)}...</span>
+    </div>
+  </div>
+</div>
                 </div>
               )}
             </div>
@@ -555,7 +574,7 @@ const E2EEChatDemo = () => {
 
             {/* Process Log */}
             <div className="bg-gray-900/50 rounded-xl p-6 flex flex-col h-96">
-              <h3 className="text-xl font-semibold text-cyan-400 mb-4 flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-cyan-400 mb-4 flex items-center gap-2 mt-20 sm:mt-10">
                 <span className="text-2xl">📋</span>
                 Security Log
               </h3>
