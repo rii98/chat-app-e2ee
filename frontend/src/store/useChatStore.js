@@ -287,7 +287,6 @@ set({ messages: [...messages, { ...res.data, text: decryptedText }] });
       }
       const currentUserId = useAuthStore.getState().authUser._id;
       if (newMessage.senderId !== currentUserId) {
-        console.log("hi")
         const audio = new Audio("/notification-sound.mp3"); // Add your sound file to public folder
         audio.play().catch(error => console.log("Error playing notification sound:", error));
       }
